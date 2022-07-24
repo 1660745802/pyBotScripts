@@ -1,4 +1,3 @@
-from curses.ascii import isdigit
 from email import message
 from hashlib import new
 from re import T

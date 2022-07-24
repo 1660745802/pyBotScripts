@@ -37,11 +37,11 @@ async def recv(websocket, recv_text):
         # text = 'bot 命令集:\n"积分命令", "德扑"\n"摸鱼/氵", "来点涩图", "新番", "有内鬼/无内鬼"'
         text = "bot 命令集:\n"
         for i in q_talk:
-            text += i + ", "
-        text += "\n"
+            text += i + "，"
+        text = text[:-1] + "\n"
         for i in q_command:
-            text += i + ", "
-        await q_send(websocket, recv_text, text)
+            text += i + "，"
+        await q_send(websocket, recv_text, text[:-1])
         return
 
     # q_talk
