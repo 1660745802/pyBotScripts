@@ -2,6 +2,8 @@ import re
 import datetime
 from openpyxl import load_workbook
 from random import choice
+import requests, json, opencc
+
 
 url = "https://hmacg.cn/bangumi/xfb-dl.php?dl=202204&type=all&ext=xlsx"
 
@@ -44,3 +46,40 @@ def bangumi_list(message):
             text += "[mirai:face:{}] ".format(choice(face_code))
             text += line[2] + "\n" + line[3] + " " + str(line[4]).strip() + "\ntags: " + line[13] + "\n\n"
     return text[:-2]
+
+bg_list = [[] for i in range(7)]
+
+def update_bg_list():
+    addr = "https://bangumi.online/api/schedule"
+    info = requests.post(addr)
+    info = json.loads(info.text)["data"]
+    for i in range(7):
+        for bg in info[i]:
+            time = int(bg)
+            time += 28800
+            for dic in info[i][bg]:
+                if dic["title_cn"] == None:
+                    continue
+                bg_list[i if time < 86400 else (i + 1) % 7].append({
+                    "time": time if time < 86400 else time - 86400,
+                    "cover": dic["cover"],
+                    "title": dic["title_cn"],
+                    "vid": dic["vid"]
+                })
+    for i in range(7):
+        bg_list[i] = sorted(bg_list[i], key=lambda item:item["time"])
+
+update_bg_list()
+def bangumi_watch(message):
+    message = opencc.OpenCC("s2t").convert(message[3:].strip()).lower()
+    for i in bg_list:
+        for j in i:
+            if j["title"].lower().find(message) != -1:
+                message_chain = []
+                message_chain.append(True)
+                message_chain.append({"type": "Image", "url": j["cover"]})
+                message_chain.append({"type": "Plain", "text": "https://bangumi.online/watch/" + j["vid"]})
+                return message_chain
+    return ""
+
+

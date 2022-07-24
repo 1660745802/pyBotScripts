@@ -14,6 +14,7 @@ q_talk = { # 不可带参数 ==
 q_command = { # 可带参数 .startswith 函数默认参数 message
     "来点涩图": setu,
     "新番": bangumi.bangumi_list,
+    "我要看": bangumi.bangumi_watch,
     "无内鬼": gen_img,
     "有内鬼": gen_img,
 }
