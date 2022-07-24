@@ -72,6 +72,8 @@ def update_bg_list():
 update_bg_list()
 def bangumi_watch(message):
     message = opencc.OpenCC("s2t").convert(message[3:].strip()).lower()
+    if message == "":
+        return ""
     for i in bg_list:
         for j in i:
             if j["title"].lower().find(message) != -1:
