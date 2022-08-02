@@ -70,7 +70,7 @@ def bangumi_list_all():
 
 
 def bangumi_list(message):
-    if "all" in message:
+    if message.strip() == "新番":
         return bangumi_list_all()
     text = ""
     days_list = get_days(message)
