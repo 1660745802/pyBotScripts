@@ -36,17 +36,6 @@ def get_days(message):
         days.append(li[d])
     return days
 
-def bangumi_list(message):
-    text = ""
-    days_list = get_days(message)
-    rows = ws.rows
-    for row in rows:
-        line = [col.value for col in row]
-        if line[3] in days_list:
-            text += "[mirai:face:{}] ".format(choice(face_code))
-            text += line[2] + "\n" + line[3] + " " + str(line[4]).strip() + "\ntags: " + line[13] + "\n\n"
-    return text[:-2]
-
 bg_list = [[] for i in range(7)]
 
 def update_bg_list():
@@ -58,27 +47,52 @@ def update_bg_list():
             time = int(bg)
             time += 28800
             for dic in info[i][bg]:
-                if dic["title_cn"] == None:
-                    continue
+                if (dic["title_zh"] if "title_zh" in dic else dic["title_cn"]) is None:
+                    dic["title_zh"] = dic["title_ja"]
                 bg_list[i if time < 86400 else (i + 1) % 7].append({
                     "time": time if time < 86400 else time - 86400,
                     "cover": dic["cover"],
-                    "title": dic["title_cn"],
+                    "title": dic["title_zh"] if "title_zh" in dic else dic["title_cn"],
                     "vid": dic["vid"]
                 })
     for i in range(7):
         bg_list[i] = sorted(bg_list[i], key=lambda item:item["time"])
 
-update_bg_list()
+def bangumi_list_all():
+    update_bg_list()
+    li = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+    text = ""
+    for i in range(7):
+        for j in bg_list[i]:
+            text += "[mirai:face:{}] ".format(choice(face_code))
+            text += opencc.OpenCC("t2s").convert(j["title"]) + " " + li[i] + " " + "%02d:%02d"%(j["time"] // 3600 ,(j["time"] % 3600) // 60) + "\n"
+    return text[:-1]
+
+
+def bangumi_list(message):
+    if "all" in message:
+        return bangumi_list_all()
+    text = ""
+    days_list = get_days(message)
+    rows = ws.rows
+    for row in rows:
+        line = [col.value for col in row]
+        if line[3] in days_list:
+            text += "[mirai:face:{}] ".format(choice(face_code))
+            text += line[2] + "\n" + line[3] + " " + str(line[4]).strip() + "\ntags: " + line[13] + "\n\n"
+    return text[:-2]
+
 def bangumi_watch(message):
-    message = opencc.OpenCC("s2t").convert(message[3:].strip()).lower()
+    update_bg_list()
+    message = message[3:].strip().lower()
     if message == "":
         return ""
     for i in bg_list:
         for j in i:
-            if j["title"].lower().find(message) != -1:
+            if opencc.OpenCC("t2s").convert(j["title"]).lower().find(message) != -1:
                 message_chain = []
                 message_chain.append(True)
+                message_chain.append({"type": "Plain", "text": " " + j["title"]})
                 message_chain.append({"type": "Image", "url": j["cover"]})
                 message_chain.append({"type": "Plain", "text": "https://bangumi.online/watch/" + j["vid"]})
                 return message_chain
