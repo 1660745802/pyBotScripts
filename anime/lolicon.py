@@ -18,8 +18,9 @@ def moyu():
     r = requests.get("https://api.vvhan.com/api/moyu?type=json").text
     r = json.loads(r)
     r = r["url"]
-    message_chain = [False, {"type": "Image", "url": r}]
+    # message_chain = [False, {"type": "Image", "url": r}]
+    return [False, {"type": "Plain", "text": 'json.loads(requests.get("https://api.vvhan.com/api/moyu?type=json").text)["url"]'}]
     return message_chain
 
 if __name__ == "__main__":
-    moyu()
+    print(json.loads(requests.get("https://api.vvhan.com/api/moyu?type=json").text)["url"])
